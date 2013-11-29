@@ -543,4 +543,10 @@
     <string name="missed_call_breath_summary">Will give your missed call notifications a breathing effect in the statusbar</string>
     <string name="voicemail_breath_title">Breathing Voicemail</string>
     <string name="voicemail_breath_summary">Will give your voicemail notifications a breathing effect in the statusbar</string>
+
+    <!-- Network Monitor -->
+    <string name="network_monitor_title">Network monitor</string>
+    <string name="active_connections_title">Active connections (ESTABLISHED)</string>
+    <string name="active_connections_closing">Connections closing (CLOSE WAIT)</string>
+
 </resources>
