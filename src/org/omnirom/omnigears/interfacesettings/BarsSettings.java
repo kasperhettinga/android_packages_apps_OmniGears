@@ -52,6 +52,7 @@ public class BarsSettings extends SettingsPreferenceFragment implements
     private static final String QUICKSETTINGS_DYNAMIC = "quicksettings_dynamic_row";
     private static final String CATEGORY_NAVBAR = "category_navigation_bar";
     private static final String SOFT_BACK_KILL_APP = "soft_back_kill_app";
+    private static final String DOUBLE_TAP_TO_SLEEP = "double_tap_to_sleep";
 
     // Device types
     private static final int DEVICE_PHONE  = 0;
@@ -66,6 +67,7 @@ public class BarsSettings extends SettingsPreferenceFragment implements
     private ListPreference mQuickPulldown;
     private ListPreference mSmartPulldown;
     private CheckBoxPreference mSoftBackKillApp;
+    private CheckBoxPreference mDTS;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -132,8 +134,8 @@ public class BarsSettings extends SettingsPreferenceFragment implements
             Settings.System.QUICK_SETTINGS_TILES_ROW, 1) != 0);
         mQuickSettingsDynamic.setOnPreferenceChangeListener(this);
 
-        boolean hasNavBar = getResources().getBoolean(
-                com.android.internal.R.bool.config_showNavigationBar);
+        boolean hasNavBar =
+                getResources().getBoolean(com.android.internal.R.bool.config_showNavigationBar);
         // Also check, if users without navigation bar force enabled it.
         hasNavBar = hasNavBar || (SystemProperties.getInt("qemu.hw.mainkeys", 1) == 0);
 
@@ -194,6 +196,10 @@ public class BarsSettings extends SettingsPreferenceFragment implements
             boolean value = (Boolean) objValue;
             Settings.System.putInt(resolver,
                 Settings.System.SOFT_BACK_KILL_APP_ENABLE, value ? 1 : 0);
+        } else if (preference == mDTS) {
+            boolean value = (Boolean) objValue;
+            Settings.System.putInt(resolver, Settings.System.DOUBLE_TAP_TO_SLEEP,
+                    value ? 1 : 0);
         } else {
             return false;
         }

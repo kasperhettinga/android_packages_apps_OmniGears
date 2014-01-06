@@ -522,4 +522,9 @@
     <!-- navigation bar -->
     <string name="soft_back_kill_app_title">Long press back to kill app</string>
     <string name="soft_back_kill_app_summary">Long pressing back button will kill foreground app</string>
+
+    <!--Double tap to sleep-->
+    <string name="double_tap_to_sleep_title">Double tap to sleep</string>
+    <string name="double_tap_to_sleep_summary">Double tap statusbar to lock device</string>
+
 </resources>

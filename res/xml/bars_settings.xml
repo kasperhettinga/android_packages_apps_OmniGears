@@ -76,6 +76,13 @@
                 android:key="clock_style_pref"
                 android:title="@string/status_bar_clock" />
 
+        <CheckBoxPreference
+                android:key="double_tap_to_sleep"
+                android:title="@string/double_tap_to_sleep_title"
+                android:summary="@string/double_tap_to_sleep_summary"
+                android:persistent="false"
+                android:defaultValue="false" />
+
     </PreferenceCategory>
 
     <!-- Navigation bar -->
