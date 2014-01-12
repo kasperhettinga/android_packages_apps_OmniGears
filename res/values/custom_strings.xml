@@ -531,4 +531,8 @@
     <string name="screen_on_notification_led_title">Screen-On Notification Light</string>
     <string name="screen_on_notification_led_summary">Enable Notification Light even when screen is on</string> 
 
+    <!-- Notification Panel Shortcuts -->
+    <string name="clock_shortcut_title">Clock Shortcut</string>
+    <string name="clock_shortcut_default">Default (system alarm clock)</string>
+
 </resources>

@@ -18,19 +18,23 @@
 
 package org.omnirom.omnigears.interfacesettings;
 
-import com.android.settings.SettingsPreferenceFragment;
-import com.android.settings.R;
-
+import android.app.Activity;
 import android.content.ContentResolver;
-import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
-import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.provider.Settings;
-import android.provider.Settings.SettingNotFoundException;
 import android.util.Log;
+
+import com.android.settings.R;
+import com.android.settings.SettingsPreferenceFragment;
+import com.android.settings.quicklaunch.BookmarkPicker;
+
+import java.net.URISyntaxException;
 
 public class NotificationPanelSettings extends SettingsPreferenceFragment implements
         Preference.OnPreferenceChangeListener {
@@ -38,9 +42,13 @@ public class NotificationPanelSettings extends SettingsPreferenceFragment implem
 
     private static final String STATUS_BAR_CUSTOM_HEADER = "custom_status_bar_header";
     private static final String QUICK_SWIPE = "quick_swipe";
+    private static final String CLOCK_SHORTCUT = "clock_shortcut";
+
+    private static final int REQUEST_PICK_BOOKMARK = 1;
 
     private CheckBoxPreference mStatusBarCustomHeader;
     private CheckBoxPreference mQuickSwipe;
+    private Preference mClockShortcut;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,11 +67,67 @@ public class NotificationPanelSettings extends SettingsPreferenceFragment implem
         mQuickSwipe.setChecked(Settings.System.getInt(resolver,
             Settings.System.QUICK_SWIPE, 1) == 1);
         mQuickSwipe.setOnPreferenceChangeListener(this);
+
+        mClockShortcut = prefSet.findPreference(CLOCK_SHORTCUT);
+
+        Intent clockShortcutIntent = null;
+        String clockShortcutIntentUri = Settings.System.getString(getContentResolver(), Settings.System.CLOCK_SHORTCUT);
+        if (clockShortcutIntentUri != null) {
+            try {
+                clockShortcutIntent = Intent.parseUri(clockShortcutIntentUri, 0);
+            } catch (URISyntaxException e) {
+                clockShortcutIntent = null;
+            }
+        }
+
+        if(clockShortcutIntent != null) {
+            PackageManager packageManager = getPackageManager();
+            ResolveInfo info = packageManager.resolveActivity(clockShortcutIntent, 0);
+            if (info != null) {
+                mClockShortcut.setSummary(info.loadLabel(packageManager));
+            } else {
+                mClockShortcut.setSummary(R.string.clock_shortcut_default);
+            }
+        } else {
+            mClockShortcut.setSummary(R.string.clock_shortcut_default);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != Activity.RESULT_OK) {
+            return;
+        }
+
+        if (requestCode == REQUEST_PICK_BOOKMARK) {
+            // Returned from the 'pick bookmark for this shortcut' screen
+            if (data == null) {
+                Log.w(TAG, "Result from bookmark picker does not have an intent.");
+                return;
+            }
+            Settings.System.putString(getContentResolver(), Settings.System.CLOCK_SHORTCUT, data.toUri(0));
+            PackageManager packageManager = getPackageManager();
+            ResolveInfo info = packageManager.resolveActivity(data, 0);
+            if (info != null) {
+                mClockShortcut.setSummary(info.loadLabel(packageManager));
+            } else {
+                mClockShortcut.setSummary(R.string.clock_shortcut_default);
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
-        return true;
+        if(preference == mClockShortcut) {
+            // Open the screen to pick a bookmark for this shortcut
+
+            Intent intent = new Intent(getActivity(), BookmarkPicker.class);
+            startActivityForResult(intent, REQUEST_PICK_BOOKMARK);
+            return true;
+        }
+        return false;
     }
 
     public boolean onPreferenceChange(Preference preference, Object objValue) {

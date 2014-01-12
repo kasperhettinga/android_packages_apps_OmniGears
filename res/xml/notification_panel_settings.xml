@@ -32,4 +32,11 @@
             android:summary="@string/quick_swipe_summary"
             android:persistent="false"/>
 
+    <Preference
+            android:key="clock_shortcut"
+            android:selectable="true"
+            android:title="@string/clock_shortcut_title"
+            android:summary="@string/clock_shortcut_default"
+            android:persistent="false"/>
+
 </PreferenceScreen>
