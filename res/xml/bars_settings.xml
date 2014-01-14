@@ -65,12 +65,6 @@
                 android:entryValues="@array/smart_pulldown_values"
                 android:persistent="false" />
 
-        <CheckBoxPreference
-                android:key="quicksettings_dynamic_row"
-                android:title="@string/qs_configurable_title"
-                android:summary="@string/qs_configurable_summary"
-                android:persistent="false"/>
-
         <PreferenceScreen
                 android:fragment="org.omnirom.omnigears.slim.StatusBarClockStyle"
                 android:key="clock_style_pref"
