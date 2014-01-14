@@ -24,13 +24,49 @@
             android:key="custom_status_bar_header"
             android:title="@string/custom_statusbar_header_title"
             android:summary="@string/custom_statusbar_header_summary"
-            android:persistent="false"/>
+            android:persistent="false"
+            android:defaultValue="false" />
 
     <CheckBoxPreference
             android:key="quick_swipe"
             android:title="@string/quick_swipe_title"
             android:summary="@string/quick_swipe_summary"
-            android:persistent="false"/>
+            android:persistent="false"
+            android:defaultValue="true" />
+
+    <PreferenceCategory
+            android:key="category_quick_settings"
+            android:title="@string/quick_settings_title"/>
+
+    <ListPreference
+            android:key="quicksettings_dynamic_row"
+            android:title="@string/qs_configurable_title"
+            android:summary="@string/qs_configurable_summary"
+            android:entries="@array/qs_configurable_entries"
+            android:entryValues="@array/qs_configurable_values"
+            android:persistent="false" />
+
+    <SwitchPreference
+            android:key="quicksettings_ribbon"
+            android:title="@string/quick_settings_ribbon"
+            android:summary="@string/quick_settings_ribbon_summary"
+            android:persistent="false"
+            android:defaultValue="true" />
+
+    <CheckBoxPreference
+            android:key="quicksettings_linked"
+            android:dependency="quicksettings_ribbon"
+            android:title="@string/quicksettings_linked_title"
+            android:summary="@string/quicksettings_linked_summary"
+            android:persistent="false"
+            android:defaultValue="false" />
+
+    <PreferenceScreen
+            android:key="tile_picker"
+            android:dependency="quicksettings_ribbon"
+            android:title="@string/tile_picker_title"
+            android:summary="@string/tile_picker_summary"
+            android:fragment="org.omnirom.omnigears.ui.QuickSettingsTiles" />
 
     <Preference
             android:key="clock_shortcut"

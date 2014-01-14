@@ -49,7 +49,6 @@ public class BarsSettings extends SettingsPreferenceFragment implements
     private static final String STATUS_BAR_NETWORK_ACTIVITY = "status_bar_network_activity";
     private static final String QUICK_PULLDOWN = "quick_pulldown";
     private static final String SMART_PULLDOWN = "smart_pulldown";
-    private static final String QUICKSETTINGS_DYNAMIC = "quicksettings_dynamic_row";
     private static final String CATEGORY_NAVBAR = "category_navigation_bar";
     private static final String SOFT_BACK_KILL_APP = "soft_back_kill_app";
     private static final String DOUBLE_TAP_TO_SLEEP = "double_tap_to_sleep";
@@ -66,7 +65,6 @@ public class BarsSettings extends SettingsPreferenceFragment implements
     private CheckBoxPreference mStatusBarNotifCount;
     private CheckBoxPreference mStatusBarTraffic;
     private CheckBoxPreference mStatusBarNetworkActivity;
-    private CheckBoxPreference mQuickSettingsDynamic;
     private ListPreference mQuickPulldown;
     private ListPreference mSmartPulldown;
     private CheckBoxPreference mSoftBackKillApp;
@@ -135,11 +133,6 @@ public class BarsSettings extends SettingsPreferenceFragment implements
             prefSet.removePreference(mSmartPulldown);
         }
 
-        mQuickSettingsDynamic = (CheckBoxPreference) prefSet.findPreference(QUICKSETTINGS_DYNAMIC);
-        mQuickSettingsDynamic.setChecked(Settings.System.getInt(resolver,
-            Settings.System.QUICK_SETTINGS_TILES_ROW, 1) != 0);
-        mQuickSettingsDynamic.setOnPreferenceChangeListener(this);
-
         boolean hasNavBar =
                 getResources().getBoolean(com.android.internal.R.bool.config_showNavigationBar);
         // Also check, if users without navigation bar force enabled it.
@@ -199,10 +192,6 @@ public class BarsSettings extends SettingsPreferenceFragment implements
             boolean value = (Boolean) objValue;
             Settings.System.putInt(resolver, Settings.System.STATUS_BAR_NETWORK_ACTIVITY,
                     value ? 1 : 0);
-        } else if (preference == mQuickSettingsDynamic) {
-            boolean value = (Boolean) objValue;
-            Settings.System.putInt(resolver,
-                Settings.System.QUICK_SETTINGS_TILES_ROW, value ? 1 : 0);
         } else if (preference == mQuickPulldown) {
             int quickPulldown = Integer.valueOf((String) objValue);
             Settings.System.putInt(resolver, Settings.System.QS_QUICK_PULLDOWN,

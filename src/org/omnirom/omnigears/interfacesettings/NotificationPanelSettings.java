@@ -25,8 +25,10 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
+import android.preference.SwitchPreference;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -36,11 +38,17 @@ import com.android.settings.quicklaunch.BookmarkPicker;
 
 import java.net.URISyntaxException;
 
+import org.omnirom.omnigears.ui.QuickSettingsUtil;
+
 public class NotificationPanelSettings extends SettingsPreferenceFragment implements
         Preference.OnPreferenceChangeListener {
     private static final String TAG = "NotificationPanelSettings";
 
     private static final String STATUS_BAR_CUSTOM_HEADER = "custom_status_bar_header";
+    private static final String QUICKSETTINGS_DYNAMIC = "quicksettings_dynamic_row";
+    private static final String QUICKSETTINGS_LINKED = "quicksettings_linked";
+    private static final String QUICKSETTINGS_RIBBON = "quicksettings_ribbon";
+    private static final String QUICK_RIBBON = "tile_picker";
     private static final String QUICK_SWIPE = "quick_swipe";
     private static final String CLOCK_SHORTCUT = "clock_shortcut";
 
@@ -49,6 +57,12 @@ public class NotificationPanelSettings extends SettingsPreferenceFragment implem
     private CheckBoxPreference mStatusBarCustomHeader;
     private CheckBoxPreference mQuickSwipe;
     private Preference mClockShortcut;
+    private ListPreference mQuickSettingsDynamic;
+    private PreferenceScreen mQuickRibbon;
+    private SwitchPreference mQuickSettingsRibbon;
+    private CheckBoxPreference mQuickSettingsLinked;
+    private boolean isLinked;
+    private boolean isRibbon;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -91,6 +105,29 @@ public class NotificationPanelSettings extends SettingsPreferenceFragment implem
         } else {
             mClockShortcut.setSummary(R.string.clock_shortcut_default);
         }
+
+        mQuickRibbon = (PreferenceScreen) findPreference(QUICK_RIBBON);
+
+        mQuickSettingsRibbon = (SwitchPreference) prefSet.findPreference(QUICKSETTINGS_RIBBON);
+        isRibbon = Settings.System.getInt(resolver,
+            Settings.System.QUICK_SETTINGS_RIBBON_ENABLED, 1) != 0;
+        mQuickSettingsRibbon.setChecked(isRibbon);
+        mQuickSettingsRibbon.setOnPreferenceChangeListener(this);
+
+        mQuickSettingsLinked = (CheckBoxPreference) prefSet.findPreference(QUICKSETTINGS_LINKED);
+        isLinked = Settings.System.getInt(resolver,
+            Settings.System.QUICK_SETTINGS_LINKED_TILES, 0) == 1;
+        mQuickSettingsLinked.setChecked(isLinked);
+        mQuickSettingsLinked.setOnPreferenceChangeListener(this);
+
+        mQuickRibbon.setEnabled(!isLinked && isRibbon? true : false);
+
+        mQuickSettingsDynamic = (ListPreference) prefSet.findPreference(QUICKSETTINGS_DYNAMIC);
+        mQuickSettingsDynamic.setOnPreferenceChangeListener(this);
+        int statusQuickSettings = Settings.System.getInt(resolver,
+                Settings.System.QUICK_SETTINGS_TILES_ROW, 1);
+        mQuickSettingsDynamic.setValue(String.valueOf(statusQuickSettings));
+        mQuickSettingsDynamic.setSummary(mQuickSettingsDynamic.getEntry());
     }
 
     @Override
@@ -116,6 +153,7 @@ public class NotificationPanelSettings extends SettingsPreferenceFragment implem
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
+
     }
 
     @Override
@@ -127,9 +165,17 @@ public class NotificationPanelSettings extends SettingsPreferenceFragment implem
             startActivityForResult(intent, REQUEST_PICK_BOOKMARK);
             return true;
         }
-        return false;
+        // If we didn't handle it, let preferences handle it.
+        return super.onPreferenceTreeClick(preferenceScreen, preference);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        QuickSettingsUtil.updateAvailableTiles(getActivity());
+    }
+
+    @Override
     public boolean onPreferenceChange(Preference preference, Object objValue) {
         ContentResolver resolver = getActivity().getContentResolver();
         if (preference == mStatusBarCustomHeader) {
@@ -140,9 +186,34 @@ public class NotificationPanelSettings extends SettingsPreferenceFragment implem
             boolean value = (Boolean) objValue;
             Settings.System.putInt(resolver,
                 Settings.System.QUICK_SWIPE, value ? 1 : 0);
+        } else if (preference == mQuickSettingsDynamic) {
+            int val = Integer.parseInt((String) objValue);
+            int index = mQuickSettingsDynamic.findIndexOfValue((String) objValue);
+            Settings.System.putInt(resolver,
+                Settings.System.QUICK_SETTINGS_TILES_ROW, val);
+            mQuickSettingsDynamic.setSummary(mQuickSettingsDynamic.getEntries()[index]);
+        } else if (preference == mQuickSettingsLinked) {
+            boolean value = (Boolean) objValue;
+            Settings.System.putInt(resolver,
+                Settings.System.QUICK_SETTINGS_LINKED_TILES, value ? 1 : 0);
+            isLinked = Settings.System.getInt(resolver,
+                  Settings.System.QUICK_SETTINGS_LINKED_TILES, 0) == 1;
+            isRibbon = Settings.System.getInt(resolver,
+                  Settings.System.QUICK_SETTINGS_RIBBON_ENABLED, 1) == 1;
+            mQuickRibbon.setEnabled(!isLinked && isRibbon? true : false);
+        } else if (preference == mQuickSettingsRibbon) {
+            boolean value = (Boolean) objValue;
+            Settings.System.putInt(resolver,
+                Settings.System.QUICK_SETTINGS_RIBBON_ENABLED, value ? 1 : 0);
+            isLinked = Settings.System.getInt(resolver,
+                  Settings.System.QUICK_SETTINGS_LINKED_TILES, 0) == 1;
+            isRibbon = Settings.System.getInt(resolver,
+                  Settings.System.QUICK_SETTINGS_RIBBON_ENABLED, 1) == 1;
+            mQuickRibbon.setEnabled(!isLinked && isRibbon? true : false);
         } else {
             return false;
         }
+
         return true;
     }
 }
