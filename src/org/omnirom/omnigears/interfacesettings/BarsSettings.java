@@ -23,6 +23,7 @@ import com.android.settings.R;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.SystemProperties;
@@ -53,6 +54,9 @@ public class BarsSettings extends SettingsPreferenceFragment implements
     private static final String CATEGORY_NAVBAR = "category_navigation_bar";
     private static final String SOFT_BACK_KILL_APP = "soft_back_kill_app";
     private static final String EMULATE_MENU_KEY = "emulate_menu_key";
+    private static final String SMS_BREATH = "sms_breath";
+    private static final String MISSED_CALL_BREATH = "missed_call_breath";
+    private static final String VOICEMAIL_BREATH = "voicemail_breath";
 
     // Device types
     private static final int DEVICE_PHONE  = 0;
@@ -68,6 +72,9 @@ public class BarsSettings extends SettingsPreferenceFragment implements
     private ListPreference mSmartPulldown;
     private CheckBoxPreference mSoftBackKillApp;
     private CheckBoxPreference mEmulateMenuKey;
+    private CheckBoxPreference mSMSBreath;
+    private CheckBoxPreference mMissedCallBreath;
+    private CheckBoxPreference mVoicemailBreath;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -143,7 +150,7 @@ public class BarsSettings extends SettingsPreferenceFragment implements
         if (!hasNavBar) {
             prefSet.removePreference(findPreference(CATEGORY_NAVBAR));
         } else {
-            mSoftBackKillApp = (CheckBoxPreference) prefSet.findPreference(SOFT_BACK_KILL_APP);
+            mSoftBackKillApp = (CheckBoxPreference) findPreference(SOFT_BACK_KILL_APP);
             mSoftBackKillApp.setChecked(Settings.System.getInt(resolver,
                     Settings.System.SOFT_BACK_KILL_APP_ENABLE, 0) == 1);
             mSoftBackKillApp.setOnPreferenceChangeListener(this);
@@ -152,6 +159,32 @@ public class BarsSettings extends SettingsPreferenceFragment implements
             mEmulateMenuKey.setChecked(Settings.System.getInt(resolver,
                     Settings.System.EMULATE_HW_MENU_KEY, 0) == 1);
             mEmulateMenuKey.setOnPreferenceChangeListener(this);
+        }
+
+        mSMSBreath = (CheckBoxPreference) findPreference(SMS_BREATH);
+        mMissedCallBreath = (CheckBoxPreference) findPreference(MISSED_CALL_BREATH);
+        mVoicemailBreath = (CheckBoxPreference) findPreference(VOICEMAIL_BREATH);
+
+        Context context = getActivity();
+        ConnectivityManager cm = (ConnectivityManager)
+                context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if(cm.isNetworkSupported(ConnectivityManager.TYPE_MOBILE)) {
+            mSMSBreath.setChecked(Settings.System.getInt(resolver,
+                    Settings.System.KEY_SMS_BREATH, 0) == 1);
+            mSMSBreath.setOnPreferenceChangeListener(this);
+
+            mMissedCallBreath.setChecked(Settings.System.getInt(resolver,
+                    Settings.System.KEY_MISSED_CALL_BREATH, 0) == 1);
+            mMissedCallBreath.setOnPreferenceChangeListener(this);
+
+            mVoicemailBreath.setChecked(Settings.System.getInt(resolver,
+                    Settings.System.KEY_VOICEMAIL_BREATH, 0) == 1);
+            mVoicemailBreath.setOnPreferenceChangeListener(this);
+        } else {
+            prefSet.removePreference(mSMSBreath);
+            prefSet.removePreference(mMissedCallBreath);
+            prefSet.removePreference(mVoicemailBreath);
         }
     }
 
@@ -205,6 +238,18 @@ public class BarsSettings extends SettingsPreferenceFragment implements
             boolean value = (Boolean) objValue;
             Settings.System.putInt(resolver,
                 Settings.System.EMULATE_HW_MENU_KEY, value ? 1 : 0);
+        } else if (preference == mSMSBreath) {
+            boolean value = (Boolean) objValue;
+            Settings.System.putInt(resolver,
+                    Settings.System.KEY_SMS_BREATH, value ? 1 : 0);
+        } else if (preference == mMissedCallBreath) {
+            boolean value = (Boolean) objValue;
+            Settings.System.putInt(resolver,
+                    Settings.System.KEY_MISSED_CALL_BREATH, value ? 1 : 0);
+        } else if (preference == mVoicemailBreath) {
+            boolean value = (Boolean) objValue;
+            Settings.System.putInt(resolver,
+                    Settings.System.KEY_VOICEMAIL_BREATH, value ? 1 : 0);
         } else {
             return false;
         }

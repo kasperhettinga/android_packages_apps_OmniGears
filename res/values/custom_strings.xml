@@ -398,7 +398,7 @@
     <string name="smart_pulldown_dismissable">Pulldown if there are no cleareable notifications</string>
     <string name="smart_pulldown_persistent">Pulldown if there are no notifications</string>
 
-    <!-- Cursor control -->
+    <!-- Cursor Control -->
     <string name="volume_key_cursor_control_title">Cursor control</string>
     <string name="volume_key_cursor_control_on">Left/right</string>
     <string name="volume_key_cursor_control_on_reverse">Right/left</string>
@@ -428,7 +428,7 @@
     <string name="quick_swipe_title">Quick swipe</string>
     <string name="quick_swipe_summary">Quickly swipe between quick settings and notification drawer</string>
 
-    <!-- navigation bar -->
+    <!-- Navigation Bar -->
     <string name="soft_back_kill_app_title">Long press back to kill app</string>
     <string name="soft_back_kill_app_summary">Long pressing back button will kill foreground app</string>
 
@@ -487,4 +487,14 @@
     <string name="clock_date_style_normal">Normal</string>
     <string name="clock_date_style_lowercase">Lowercase</string>
     <string name="clock_date_style_uppercase">Uppercase</string>
+
+    <!-- Breathing Notifications -->
+    <string name="breathing_notifications_title">Breathing Notifications</string>
+    <string name="sms_breath_title">Breathing SMS</string>
+    <string name="sms_breath_summary">Will give your sms notifications a breathing effect in the statusbar</string>
+    <string name="missed_call_breath_title">Breathing Missed Call</string>
+    <string name="missed_call_breath_summary">Will give your missed call notifications a breathing effect in the statusbar</string>
+    <string name="voicemail_breath_title">Breathing Voicemail</string>
+    <string name="voicemail_breath_summary">Will give your voicemail notifications a breathing effect in the statusbar</string>
+
 </resources>
