@@ -23,10 +23,12 @@ import com.android.settings.R;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.SystemProperties;
 import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
@@ -45,11 +47,13 @@ public class BarsSettings extends SettingsPreferenceFragment implements
 
     private static final String STATUS_BAR_BRIGHTNESS_CONTROL = "status_bar_brightness_control";
     private static final String STATUS_BAR_NOTIF_COUNT = "status_bar_notif_count";
-    private static final String STATUS_BAR_TRAFFIC = "status_bar_traffic";
-    private static final String STATUS_BAR_NETWORK_ACTIVITY = "status_bar_network_activity";
     private static final String QUICK_PULLDOWN = "quick_pulldown";
     private static final String SMART_PULLDOWN = "smart_pulldown";
     private static final String CATEGORY_NAVBAR = "category_navigation_bar";
+    private static final String NETWORK_TRAFFIC_STATE = "network_traffic_state";
+    private static final String NETWORK_TRAFFIC_BYTES = "network_traffic_bytes";
+    private static final String NETWORK_TRAFFIC_PERIOD = "network_traffic_period";
+    private static final String STATUS_BAR_NETWORK_ACTIVITY = "status_bar_network_activity";
     private static final String SOFT_BACK_KILL_APP = "soft_back_kill_app";
     private static final String DOUBLE_TAP_TO_SLEEP = "double_tap_to_sleep";
     private static final String SMS_BREATH = "sms_breath";
@@ -63,20 +67,30 @@ public class BarsSettings extends SettingsPreferenceFragment implements
 
     private CheckBoxPreference mStatusBarBrightnessControl;
     private CheckBoxPreference mStatusBarNotifCount;
-    private CheckBoxPreference mStatusBarTraffic;
-    private CheckBoxPreference mStatusBarNetworkActivity;
     private ListPreference mQuickPulldown;
     private ListPreference mSmartPulldown;
+    private ListPreference mNetTrafficState;
+    private CheckBoxPreference mNetTrafficBytes;
+    private ListPreference mNetTrafficPeriod;
+    private CheckBoxPreference mStatusBarNetworkActivity;
     private CheckBoxPreference mSoftBackKillApp;
     private CheckBoxPreference mDTS;
     private CheckBoxPreference mSMSBreath;
     private CheckBoxPreference mMissedCallBreath;
     private CheckBoxPreference mVoicemailBreath;
 
+    private int mNetTrafficVal;
+    private int MASK_UP;
+    private int MASK_DOWN;
+    private int MASK_BYTES;
+    private int MASK_PERIOD;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.bars_settings);
+
+        loadResources();
 
         PreferenceScreen prefSet = getPreferenceScreen();
         ContentResolver resolver = getActivity().getContentResolver();
@@ -101,18 +115,6 @@ public class BarsSettings extends SettingsPreferenceFragment implements
                 Settings.System.STATUS_BAR_NOTIF_COUNT, 0) == 1);
         mStatusBarNotifCount.setOnPreferenceChangeListener(this);
 
-        mStatusBarTraffic = (CheckBoxPreference) prefSet.findPreference(STATUS_BAR_TRAFFIC);
-        int intState = Settings.System.getInt(resolver, Settings.System.STATUS_BAR_TRAFFIC, 0);
-        intState = setStatusBarTrafficSummary(intState);
-        mStatusBarTraffic.setChecked(intState > 0);
-        mStatusBarTraffic.setOnPreferenceChangeListener(this);
-
-        mStatusBarNetworkActivity =
-                (CheckBoxPreference) prefSet.findPreference(STATUS_BAR_NETWORK_ACTIVITY);
-        mStatusBarNetworkActivity.setChecked(Settings.System.getInt(resolver,
-                Settings.System.STATUS_BAR_NETWORK_ACTIVITY, 0) == 1);
-        mStatusBarNetworkActivity.setOnPreferenceChangeListener(this);
-
         mQuickPulldown = (ListPreference) findPreference(QUICK_PULLDOWN);
         mSmartPulldown = (ListPreference) findPreference(SMART_PULLDOWN);
 
@@ -132,6 +134,34 @@ public class BarsSettings extends SettingsPreferenceFragment implements
             prefSet.removePreference(mQuickPulldown);
             prefSet.removePreference(mSmartPulldown);
         }
+
+        mStatusBarNetworkActivity =
+                (CheckBoxPreference) prefSet.findPreference(STATUS_BAR_NETWORK_ACTIVITY);
+        mStatusBarNetworkActivity.setChecked(Settings.System.getInt(resolver,
+                Settings.System.STATUS_BAR_NETWORK_ACTIVITY, 0) == 1);
+        mStatusBarNetworkActivity.setOnPreferenceChangeListener(this);
+
+        mNetTrafficState = (ListPreference) prefSet.findPreference(NETWORK_TRAFFIC_STATE);
+        mNetTrafficBytes = (CheckBoxPreference) prefSet.findPreference(NETWORK_TRAFFIC_BYTES);
+        mNetTrafficPeriod = (ListPreference) prefSet.findPreference(NETWORK_TRAFFIC_PERIOD);
+
+        mNetTrafficVal = Settings.System.getInt(resolver, Settings.System.NETWORK_TRAFFIC_STATE, 0);
+        int intIndex = mNetTrafficVal & (MASK_UP + MASK_DOWN);
+        intIndex = mNetTrafficState.findIndexOfValue(String.valueOf(intIndex));
+        if (intIndex == 0) {
+            mNetTrafficBytes.setEnabled(false);
+            mNetTrafficPeriod.setEnabled(false);
+        }
+        mNetTrafficState.setValueIndex(intIndex >= 0 ? intIndex : 0);
+        mNetTrafficState.setOnPreferenceChangeListener(this);
+
+        mNetTrafficBytes.setChecked(getBit(mNetTrafficVal, MASK_BYTES));
+        mNetTrafficBytes.setOnPreferenceChangeListener(this);
+
+        intIndex = (mNetTrafficVal & MASK_PERIOD) >>> 16;
+        intIndex = mNetTrafficPeriod.findIndexOfValue(String.valueOf(intIndex));
+        mNetTrafficPeriod.setValueIndex(intIndex >= 0 ? intIndex : 1);
+        mNetTrafficPeriod.setOnPreferenceChangeListener(this);
 
         boolean hasNavBar =
                 getResources().getBoolean(com.android.internal.R.bool.config_showNavigationBar);
@@ -180,18 +210,6 @@ public class BarsSettings extends SettingsPreferenceFragment implements
         } else if (preference == mStatusBarNotifCount) {
             boolean value = (Boolean) objValue;
             Settings.System.putInt(resolver, Settings.System.STATUS_BAR_NOTIF_COUNT, value ? 1 : 0);
-        } else if (preference == mStatusBarTraffic) {
-
-            // Increment the state and then update the label
-            int intState = Settings.System.getInt(resolver, Settings.System.STATUS_BAR_TRAFFIC, 0);
-            intState++;
-            intState = setStatusBarTrafficSummary(intState);
-            Settings.System.putInt(resolver, Settings.System.STATUS_BAR_TRAFFIC, intState);
-            if (intState > 1) {return false;}
-        } else if (preference == mStatusBarNetworkActivity) {
-            boolean value = (Boolean) objValue;
-            Settings.System.putInt(resolver, Settings.System.STATUS_BAR_NETWORK_ACTIVITY,
-                    value ? 1 : 0);
         } else if (preference == mQuickPulldown) {
             int quickPulldown = Integer.valueOf((String) objValue);
             Settings.System.putInt(resolver, Settings.System.QS_QUICK_PULLDOWN,
@@ -202,6 +220,29 @@ public class BarsSettings extends SettingsPreferenceFragment implements
             Settings.System.putInt(resolver, Settings.System.QS_SMART_PULLDOWN,
                     smartPulldown);
             updateSmartPulldownSummary(smartPulldown);
+        } else if (preference == mStatusBarNetworkActivity) {
+            boolean value = (Boolean) objValue;
+            Settings.System.putInt(resolver, Settings.System.STATUS_BAR_NETWORK_ACTIVITY,
+                    value ? 1 : 0);
+        } else if (preference == mNetTrafficState) {
+            int intState = Integer.valueOf((String)objValue);
+            mNetTrafficVal = setBit(mNetTrafficVal, MASK_UP, getBit(intState, MASK_UP));
+            mNetTrafficVal = setBit(mNetTrafficVal, MASK_DOWN, getBit(intState, MASK_DOWN));
+            Settings.System.putInt(resolver, Settings.System.NETWORK_TRAFFIC_STATE, mNetTrafficVal);
+            if (intState == 0) {
+                mNetTrafficBytes.setEnabled(false);
+                mNetTrafficPeriod.setEnabled(false);
+            } else {
+                mNetTrafficBytes.setEnabled(true);
+                mNetTrafficPeriod.setEnabled(true);
+            }
+        } else if (preference == mNetTrafficBytes) {
+            mNetTrafficVal = setBit(mNetTrafficVal, MASK_BYTES, (Boolean) objValue);
+            Settings.System.putInt(resolver, Settings.System.NETWORK_TRAFFIC_STATE, mNetTrafficVal);
+        } else if (preference == mNetTrafficPeriod) {
+            int intState = Integer.valueOf((String)objValue);
+            mNetTrafficVal = setBit(mNetTrafficVal, MASK_PERIOD, false) + (intState << 16);
+            Settings.System.putInt(resolver, Settings.System.NETWORK_TRAFFIC_STATE, mNetTrafficVal);
         } else if (preference == mSoftBackKillApp) {
             boolean value = (Boolean) objValue;
             Settings.System.putInt(resolver,
@@ -228,17 +269,24 @@ public class BarsSettings extends SettingsPreferenceFragment implements
         return true;
     }
 
-    private int setStatusBarTrafficSummary(int intState) {
-        // These states must match com.android.systemui.statusbar.policy.Traffic
-        if (intState == 1) {
-            mStatusBarTraffic.setSummary(R.string.show_network_speed_bits);
-        } else if (intState == 2) {
-            mStatusBarTraffic.setSummary(R.string.show_network_speed_bytes);
-        } else {
-            mStatusBarTraffic.setSummary(R.string.show_network_speed_summary);
-            return 0;
+    private void loadResources() {
+        Resources resources = getActivity().getResources();
+        MASK_UP = resources.getInteger(R.integer.maskUp);
+        MASK_DOWN = resources.getInteger(R.integer.maskDown);
+        MASK_BYTES = resources.getInteger(R.integer.maskBytes);
+        MASK_PERIOD = resources.getInteger(R.integer.maskPeriod);
+    }
+
+    // intMask should only have the desired bit(s) set
+    private int setBit(int intNumber, int intMask, boolean blnState) {
+        if (blnState) {
+            return (intNumber | intMask);
         }
-        return intState;
+        return (intNumber & ~intMask);
+    }
+
+    private boolean getBit(int intNumber, int intMask) {
+        return (intNumber & intMask) == intMask;
     }
 
     private void updateQuickPulldownSummary(int i) {

@@ -212,11 +212,21 @@
     <string name="button_headsethook_launch_voice_title">Headset launches voice</string>
     <string name="button_headsethook_launch_voice_summary">Pressing the headset button will launch voice controls</string>
 
-    <!-- Network speed -->
-    <string name="show_network_speed">Network speed indicator</string>
-    <string name="show_network_speed_summary">Show network speed in statusbar</string>
-    <string name="show_network_speed_bits">Show speed as bits per second</string>
-    <string name="show_network_speed_bytes">Show speed as Bytes per second</string>
+    <!-- Network traffic -->
+    <string name="show_network_traffic_state">Network traffic stats</string>
+    <string name="show_network_traffic_state_summary">Show network traffic in statusbar</string>
+    <string name="show_network_traffic_bytes">Display traffic as Bytes</string>
+    <string name="show_network_traffic_bytes_summary">Show traffic as Bytes per second</string>
+    <string name="show_network_traffic_frequency">Change update frequency</string>
+    <string name="show_network_traffic_frequency_summary">How often to update in milliseconds</string>
+    <string name="show_network_traffic_disable">Disable traffic stats</string>
+    <string name="show_network_traffic_up">Show outgoing traffic</string>
+    <string name="show_network_traffic_down">Show incoming traffic</string>
+    <string name="show_network_traffic_all">Show all network traffic</string>
+    <string name="show_network_traffic_500">500 ms</string>
+    <string name="show_network_traffic_1000">1000 ms</string>
+    <string name="show_network_traffic_1500">1500 ms</string>
+    <string name="show_network_traffic_2000">2000 ms</string>
 
     <!-- Status Bar Activity Indicators -->
     <string name="show_activity_indicators_on_status_bar_title">Network activity indicator</string>
