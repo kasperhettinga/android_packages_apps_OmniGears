@@ -159,15 +159,28 @@
     <string name="button_headsethook_launch_voice_title">Headset launches voice</string>
     <string name="button_headsethook_launch_voice_summary">Pressing the headset button will launch voice controls</string>
 
-    <!-- Network speed -->
-    <string name="show_network_speed">Network speed indicator</string>
-    <string name="show_network_speed_summary">Show network speed in statusbar</string>
-    <string name="show_network_speed_bits">Show speed as bits per second</string>
-    <string name="show_network_speed_bytes">Show speed as Bytes per second</string>
+    <!-- Network traffic -->
+    <string name="network_traffic_title">Network traffic</string>
+    <string name="show_network_traffic_state">Traffic Stats</string>
+    <string name="show_network_traffic_state_summary">Show stats in statusbar</string>
+    <string name="show_network_traffic_unit">Display Units</string>
+    <string name="show_network_traffic_unit_summary">Change how traffic is displayed</string>
+    <string name="show_network_traffic_frequency">Update frequency</string>
+    <string name="show_network_traffic_frequency_summary">How often to update in milliseconds</string>
+    <string name="show_network_traffic_disable">Disable</string>
+    <string name="show_network_traffic_up">Outgoing</string>
+    <string name="show_network_traffic_down">Incoming</string>
+    <string name="show_network_traffic_all">All</string>
+    <string name="show_network_traffic_bit">bits per second</string>
+    <string name="show_network_traffic_byte">Bytes per second</string>
+    <string name="show_network_traffic_500">500 ms</string>
+    <string name="show_network_traffic_1000">1000 ms</string>
+    <string name="show_network_traffic_1500">1500 ms</string>
+    <string name="show_network_traffic_2000">2000 ms</string>
 
     <!-- Status Bar Activity Indicators -->
-    <string name="show_activity_indicators_on_status_bar_title">Network activity indicator</string>
-    <string name="show_activity_indicators_on_status_bar_summary">Show network activity in statusbar</string>
+    <string name="show_activity_indicators_on_status_bar_title">Activity indicators</string>
+    <string name="show_activity_indicators_on_status_bar_summary">Show indicators in statusbar</string>
 
     <!-- Hardware keys -->
     <string name="button_keys_title">Keys</string>
